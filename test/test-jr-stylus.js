@@ -7,12 +7,29 @@ var path = require('path');
 describe('jr-stylus', function () {
 
   var inDir = path.join('test', 'in');
+  var libDir = path.join('test', 'lib');
   var outFile = path.join('test', 'out.css');
 
   afterEach(function (done) {
     async.parallel([
       async.apply(fse.remove, inDir),
+      async.apply(fse.remove, libDir),
       async.apply(fse.remove, outFile)
+    ], done);
+  });
+
+  it('should produce an empty output file for no input files', function (done) {
+    async.waterfall([
+      async.apply(fse.mkdir, inDir),
+      async.apply(jrStylus, { inDir: inDir, outFile: outFile }),
+      async.apply(fs.readFile, outFile, 'utf-8'),
+      function (data, cb) {
+        if (data === '') {
+          cb();
+        } else {
+          cb(new Error('Unexpected output file contents: ' + data));
+        }
+      }
     ], done);
   });
 
@@ -47,13 +64,14 @@ describe('jr-stylus', function () {
     ], done);
   });
 
-  it('should produce an empty output file for no input files', function (done) {
+  it('should handle import correctly', function (done) {
     async.waterfall([
-      async.apply(fse.mkdir, inDir),
+      async.apply(fse.outputFile, path.join(inDir, 'parent.styl'), "@import '../lib/child'\nbody\n  margin 0"),
+      async.apply(fse.outputFile, path.join(libDir, 'child.styl'), 'p\n  color red'),
       async.apply(jrStylus, { inDir: inDir, outFile: outFile }),
       async.apply(fs.readFile, outFile, 'utf-8'),
       function (data, cb) {
-        if (data === '') {
+        if (data === 'p {\n  color: #f00;\n}\nbody {\n  margin: 0;\n}\n') {
           cb();
         } else {
           cb(new Error('Unexpected output file contents: ' + data));

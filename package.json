@@ -3,12 +3,13 @@
   "description": "A JR job for stylus.",
   "keywords": ["jr", "stylus"],
   "author": "Jeff Raymakers",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "./lib/jr-stylus.js",
   "dependencies": {
     "async": "0.2.x",
     "fs-extra": "0.5.x",
-    "stylus": "0.32.x"
+    "stylus": "0.32.x",
+    "xtend": "2.0.x"
   },
   "devDependencies": {
     "mocha": "1.8.x"
