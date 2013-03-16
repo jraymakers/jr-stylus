@@ -4,78 +4,83 @@ var fse = require('fs-extra');
 var jrStylus = require('../');
 var path = require('path');
 
+function outputFileError(contents) {
+  return new Error('Unexpected output file contents: ' + contents.replace(/\r/g, '\\r').replace(/\n/g, '\\n'));
+}
+
+function checkOutputFileData(data, expected, cb) {
+  if (data === expected) {
+    cb();
+  } else {
+    cb(outputFileError(data));
+  }
+}
+
 describe('jr-stylus', function () {
 
-  var inDir = path.join('test', 'in');
-  var libDir = path.join('test', 'lib');
-  var outFile = path.join('test', 'out.css');
+  var testFilesDir = path.join('test', 'files');
+
+  var inDir = path.join(testFilesDir, 'in');
+  var inFileA = path.join(inDir, 'a.styl');
+  var inFileB = path.join(inDir, 'b.styl');
+  var parentFile = path.join(inDir, 'parent.styl');
+  var libDir = path.join(testFilesDir, 'lib');
+  var childFile = path.join(libDir, 'child.styl');
+  var outFile = path.join(testFilesDir, 'out.css');
+
+  var stylusA = 'body\n  margin 0';
+  var cssA = 'body {\n  margin: 0;\n}\n';
+  var stylusB = 'p\n  color red';
+  var cssB = 'p {\n  color: #f00;\n}\n';
+  var importStylus = "@import '../lib/child'\n";
 
   afterEach(function (done) {
-    async.parallel([
-      async.apply(fse.remove, inDir),
-      async.apply(fse.remove, libDir),
-      async.apply(fse.remove, outFile)
-    ], done);
+    fse.remove(testFilesDir, done);
   });
 
   it('should produce an empty output file for no input files', function (done) {
     async.waterfall([
+      async.apply(fse.mkdir, testFilesDir),
       async.apply(fse.mkdir, inDir),
       async.apply(jrStylus, { inDir: inDir, outFile: outFile }),
       async.apply(fs.readFile, outFile, 'utf-8'),
       function (data, cb) {
-        if (data === '') {
-          cb();
-        } else {
-          cb(new Error('Unexpected output file contents: ' + data));
-        }
+        checkOutputFileData(data, '', cb);
       }
     ], done);
   });
 
   it('should produce the correct output file for a single input file', function (done) {
     async.waterfall([
-      async.apply(fse.outputFile, path.join(inDir, 'body.styl'), 'body\n  margin 0'),
+      async.apply(fse.outputFile, inFileA, stylusA),
       async.apply(jrStylus, { inDir: inDir, outFile: outFile }),
       async.apply(fs.readFile, outFile, 'utf-8'),
       function (data, cb) {
-        if (data === 'body {\n  margin: 0;\n}\n') {
-          cb();
-        } else {
-          cb(new Error('Unexpected output file contents: ' + data));
-        }
+        checkOutputFileData(data, cssA, cb);
       }
     ], done);
   });
 
   it('should produce the correct output file for multiple input files', function (done) {
     async.waterfall([
-      async.apply(fse.outputFile, path.join(inDir, 'body.styl'), 'body\n  margin 0'),
-      async.apply(fse.outputFile, path.join(inDir, 'p.styl'), 'p\n  color red'),
+      async.apply(fse.outputFile, inFileA, stylusA),
+      async.apply(fse.outputFile, inFileB, stylusB),
       async.apply(jrStylus, { inDir: inDir, outFile: outFile }),
       async.apply(fs.readFile, outFile, 'utf-8'),
       function (data, cb) {
-        if (data === 'body {\n  margin: 0;\n}\np {\n  color: #f00;\n}\n') {
-          cb();
-        } else {
-          cb(new Error('Unexpected output file contents: ' + data));
-        }
+        checkOutputFileData(data, cssA + cssB, cb);
       }
     ], done);
   });
 
   it('should handle import correctly', function (done) {
     async.waterfall([
-      async.apply(fse.outputFile, path.join(inDir, 'parent.styl'), "@import '../lib/child'\nbody\n  margin 0"),
-      async.apply(fse.outputFile, path.join(libDir, 'child.styl'), 'p\n  color red'),
+      async.apply(fse.outputFile, parentFile, importStylus + stylusA),
+      async.apply(fse.outputFile, childFile, stylusB),
       async.apply(jrStylus, { inDir: inDir, outFile: outFile }),
       async.apply(fs.readFile, outFile, 'utf-8'),
       function (data, cb) {
-        if (data === 'p {\n  color: #f00;\n}\nbody {\n  margin: 0;\n}\n') {
-          cb();
-        } else {
-          cb(new Error('Unexpected output file contents: ' + data));
-        }
+        checkOutputFileData(data, cssB + cssA, cb);
       }
     ], done);
   });
