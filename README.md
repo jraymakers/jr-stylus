@@ -54,6 +54,6 @@ Jr-stylus is a function that compiles a set of [stylus](http://learnboost.github
 
 All \*.styl files in 'inDir' (non-recursive) will be compiled into a single css file, 'outFile'.  Because 'inDir' is not traversed recursively, stylus partials and mixins can be stored in subdirectories without being included in the output file directly.
 
-See the [stylus JavaScript API](http://learnboost.github.com/stylus/docs/js.html) for details on 'options'.
+See the [stylus JavaScript API](http://learnboost.github.com/stylus/docs/js.html) for details on 'settings' and 'defines'.
 
 Jr-stylus is a thin wrapper around the stylus JavaScript API.  Stylus provides an API to compile stylus strings, and a command-line tool to compile stylus files, but no API to compile files.  Jr-stylus fills this gap.
