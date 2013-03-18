@@ -10,8 +10,11 @@ var jrStylus = require('jr-stylus');
 jrStylus({
   inDir: 'styl',
   outFile: 'styles.css',
-  options: {
+  settings: {
     paths: [ 'mixins' ]
+  },
+  defines: {
+    borderRadius: 5
   }
 }, function (err) {
   if (err) {
@@ -25,7 +28,7 @@ Given styl/button.styl:
 @import 'border-radius'
 
 .button
-  border-radius(5px)
+  border-radius(unit(borderRadius,'px'))
 ```
 
 and mixins/border-radius.styl:
