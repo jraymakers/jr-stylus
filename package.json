@@ -3,19 +3,22 @@
   "description": "A JR job for stylus.",
   "keywords": ["jr", "stylus"],
   "author": "Jeff Raymakers",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "main": "./lib/jr-stylus.js",
   "dependencies": {
     "async": "0.2.x",
     "fs-extra": "0.6.x",
-    "stylus": "0.33.x",
-    "underscore": "1.4.x"
+    "stylus": "0.36.x",
+    "underscore": "1.5.x"
   },
   "devDependencies": {
-    "mocha": "1.9.x"
+    "mocha": "1.12.x"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/jraymakers/jr-stylus.git"
+  },
+  "scripts": {
+    "test": "mocha -R list"
   }
 }
